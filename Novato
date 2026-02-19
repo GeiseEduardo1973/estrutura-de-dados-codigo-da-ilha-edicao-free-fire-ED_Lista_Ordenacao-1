@@ -1,0 +1,132 @@
+// Criado por Geise Severo Eduardo
+// Trabalho de: Estrutura  de dados em C++
+// Jogo Free Fire
+// Aluna fazendo Dupla graduação em:
+// Bacharelado em Ciências da Computação - Matrícula 202501462731 - 3o. Semestre
+// Bacharelado em Engenharia de Software - Matrícula 202501534724 - 3o. Semestre
+// Universidade : Estácio
+
+#include <iostream>  // Para uso de cin e cout
+#include <cstdio>    // Requisito: stdio.h [cite: 22]
+#include <cstdlib>   // Requisito: stdlib.h [cite: 22]
+#include <cstring>   // Requisito: string.h para usar strcmp 
+
+using namespace std;
+
+// REQUISITO: Definicao da struct Item com campos obrigatorios 
+struct Item {
+    char nome[30];      // Nome do item (ex: Gelo, AK47) [cite: 9]
+    char tipo[20];      // Tipo (ex: arma, municao, cura) [cite: 9]
+    int quantidade;     // Quantidade coletada [cite: 9]
+};
+
+// REQUISITO: Vetor de structs com capacidade para 10 itens 
+Item mochila[10];
+int totalItens = 0; // Variavel de controle do preenchimento da mochila
+
+// REQUISITO: Funcao de busca sequencial baseada no nome 
+int buscarItem(char nomeBusca[]) {
+    for (int i = 0; i < totalItens; i++) {
+        // strcmp compara duas strings. Retorna 0 se forem identicas.
+        if (strcmp(mochila[i].nome, nomeBusca) == 0) {
+            return i; // Retorna o indice onde o item foi encontrado
+        }
+    }
+    return -1; // Retorna -1 caso o item nao exista na mochila
+}
+
+// REQUISITO: Listagem dos itens registrados 
+void listarItens() {
+    printf("\n%-15s | %-15s | %s\n", "NOME", "TIPO", "QUANTIDADE");
+    printf("---------------------------------------------------\n");
+    
+    // Uso de lacos (for) para percorrer o vetor 
+    for (int i = 0; i < totalItens; i++) {
+        printf("%-15s | %-15s | %d\n", mochila[i].nome, mochila[i].tipo, mochila[i].quantidade);
+    }
+    printf("---------------------------------------------------\n");
+    printf("Total de itens: %d/10\n", totalItens);
+}
+
+// REQUISITO: Cadastro de itens (inserir Item) 
+void inserirItem() {
+    if (totalItens >= 10) {
+        printf("\nErro: Mochila cheia! Nao e possivel carregar mais loot.\n");
+        return;
+    }
+
+    printf("Nome do Item: ");
+    scanf("%s", mochila[totalItens].nome); // Leitura de string 
+    
+    printf("Tipo (arma/municao/cura): ");
+    scanf("%s", mochila[totalItens].tipo);
+    
+    printf("Quantidade: ");
+    scanf("%d", &mochila[totalItens].quantidade); // Leitura de inteiro 
+
+    totalItens++;
+    printf("\nItem adicionado com sucesso!\n");
+    listarItens(); // Listagem automatica apos operacao 
+}
+
+// REQUISITO: Remocao de itens informando o nome 
+void removerItem() {
+    char nomeRemover[30];
+    printf("Informe o nome do item que deseja descartar: ");
+    scanf("%s", nomeRemover);
+
+    int indice = buscarItem(nomeRemover);
+
+    if (indice != -1) {
+        // Reorganizacao da lista sequencial: puxa os itens seguintes para tras
+        for (int i = indice; i < totalItens - 1; i++) {
+            mochila[i] = mochila[i + 1];
+        }
+        totalItens--;
+        printf("\nItem '%s' removido da mochila.\n", nomeRemover);
+    } else {
+        printf("\nErro: Item nao encontrado no inventario.\n");
+    }
+    listarItens(); // Listagem automatica apos operacao 
+}
+
+int main() {
+    int opcao;
+
+    // REQUISITO: Interface clara e orientativa (Usabilidade) 
+    do {
+        printf("\n===============================================\n");
+        printf("   MOCHILA DE SOBREVIVENCIA - CODIGO DA ILHA   \n");
+        printf("===============================================\n");
+        printf("1. Adicionar Item (Loot)\n");
+        printf("2. Remover Item\n");
+        printf("3. Buscar Item Especifico\n");
+        printf("4. Listar Todo Inventario\n");
+        printf("0. Sair\n");
+        printf("Escolha sua acao: ");
+        scanf("%d", &opcao);
+
+        switch (opcao) {
+            case 1: inserirItem(); break;
+            case 2: removerItem(); break;
+            case 3: {
+                char busca[30];
+                printf("Digite o nome para busca: ");
+                scanf("%s", busca);
+                int achou = buscarItem(busca);
+                if (achou != -1) {
+                    printf("\nItem encontrado: %s | Tipo: %s | Qtd: %d\n", 
+                            mochila[achou].nome, mochila[achou].tipo, mochila[achou].quantidade);
+                } else {
+                    printf("\nItem nao localizado.\n");
+                }
+                break;
+            }
+            case 4: listarItens(); break;
+            case 0: printf("\nSaindo do jogo e salvando progresso...\n"); break;
+            default: printf("\nOpcao invalida! Tente novamente.\n");
+        }
+    } while (opcao != 0); // Uso de laco while para o fluxo de execucao 
+
+    return 0;
+}
