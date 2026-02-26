@@ -1,0 +1,260 @@
+// Criado por Geise Severo Eduardo
+// Trabalho de: Estrutura  de dados em C++
+// Jogo Free Fire - Aventureiro
+// Aluna fazendo Dupla graduação em:
+// Bacharelado em Ciências da Computação - Matrícula 202501462731 - 3o. Semestre
+// Bacharelado em Engenharia de Software - Matrícula 202501534724 - 3o. Semestre
+// Universidade : Estácio
+
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+using namespace std;
+
+// Variáveis Globais para Contagem de Operações (Requisito: Análise Empírica)
+int compBusca = 0;
+
+// REQUISITO: Definição da struct Item
+struct Item
+{
+    char nome[30];
+    char tipo[20];
+    int quantidade;
+};
+
+// --- ESTRUTURA 1: VETOR (LISTA SEQUENCIAL) ---
+Item mochilaVetor[10];
+int totalVetor = 0;
+
+void inserirVetor()
+{
+    if (totalVetor < 10)
+    {
+        printf("\n[VETOR] Nome do Item: ");
+        scanf("%s", mochilaVetor[totalVetor].nome);
+        printf("[VETOR] Tipo: ");
+        scanf("%s", mochilaVetor[totalVetor].tipo);
+        printf("[VETOR] Quantidade: ");
+        scanf("%d", &mochilaVetor[totalVetor].quantidade);
+        totalVetor++;
+        printf("Item guardado no slot %d do vetor.\n", totalVetor);
+    }
+    else
+    {
+        printf("\nErro: Mochila (Vetor) cheia!\n");
+    }
+}
+
+void listarVetor()
+{
+    printf("\n--- MOCHILA VETOR (%d/10) ---\n", totalVetor);
+    for (int i = 0; i < totalVetor; i++)
+    {
+        printf("%d. %-15s | %-10s | Qtd: %d\n", i + 1, mochilaVetor[i].nome, mochilaVetor[i].tipo,
+               mochilaVetor[i].quantidade);
+    }
+}
+
+void removerVetor()
+{
+    char nome[30];
+    printf("\nNome para remover do vetor: ");
+    scanf("%s", nome);
+    int indice = -1;
+    for (int i = 0; i < totalVetor; i++)
+    {
+        if (strcmp(mochilaVetor[i].nome, nome) == 0)
+        {
+            indice = i;
+            break;
+        }
+    }
+    if (indice != -1)
+    {
+        for (int i = indice; i < totalVetor - 1; i++) mochilaVetor[i] = mochilaVetor[i + 1];
+        totalVetor--;
+        printf("Item removido. Vetor reorganizado.\n");
+    }
+    else printf("Item nao encontrado no vetor.\n");
+}
+
+void ordenarVetor()
+{
+    // REQUISITO: Bubble Sort
+    Item temp;
+    for (int i = 0; i < totalVetor - 1; i++)
+    {
+        for (int j = 0; j < totalVetor - i - 1; j++)
+        {
+            if (strcmp(mochilaVetor[j].nome, mochilaVetor[j + 1].nome) > 0)
+            {
+                temp = mochilaVetor[j];
+                mochilaVetor[j] = mochilaVetor[j + 1];
+                mochilaVetor[j + 1] = temp;
+            }
+        }
+    }
+    printf("\nVetor ordenado com sucesso para Busca Binaria!\n");
+}
+
+void buscaBinariaVetor()
+{
+    char nome[30];
+    printf("\nBusca Binaria (Vetor) - Nome: ");
+    scanf("%s", nome);
+    compBusca = 0;
+    int inicio = 0, fim = totalVetor - 1;
+    while (inicio <= fim)
+    {
+        compBusca++;
+        int meio = (inicio + fim) / 2;
+        int res = strcmp(mochilaVetor[meio].nome, nome);
+        if (res == 0)
+        {
+            printf("Achado! Slot: %d | Comparacoes: %d\n", meio + 1, compBusca);
+            return;
+        }
+        if (res < 0) inicio = meio + 1;
+        else fim = meio - 1;
+    }
+    printf("Nao encontrado. Comparacoes feitas: %d\n", compBusca);
+}
+
+// --- ESTRUTURA 2: LISTA ENCADEADA (DINÂMICA) ---
+struct No
+{
+    Item dados;
+    struct No* proximo;
+};
+
+No* cabecaLista = NULL;
+
+void inserirLista()
+{
+    No* novo = (No*)malloc(sizeof(No));
+    if (!novo) return;
+    printf("\n[LISTA] Nome: ");
+    scanf("%s", novo->dados.nome);
+    printf("[LISTA] Tipo: ");
+    scanf("%s", novo->dados.tipo);
+    printf("[LISTA] Qtd: ");
+    scanf("%d", &novo->dados.quantidade);
+    novo->proximo = cabecaLista;
+    cabecaLista = novo;
+    printf("Item alocado dinamicamente na lista!\n");
+}
+
+void listarLista()
+{
+    No* atual = cabecaLista;
+    printf("\n--- MOCHILA LISTA ENCADEADA ---\n");
+    if (!atual) printf("Mochila vazia.\n");
+    while (atual != NULL)
+    {
+        printf("%-15s | %-10s | Qtd: %d\n", atual->dados.nome, atual->dados.tipo, atual->dados.quantidade);
+        atual = atual->proximo;
+    }
+}
+
+void removerLista()
+{
+    char nome[30];
+    printf("\nRemover da lista - Nome: ");
+    scanf("%s", nome);
+    No *atual = cabecaLista, *anterior = NULL;
+    while (atual != NULL && strcmp(atual->dados.nome, nome) != 0)
+    {
+        anterior = atual;
+        atual = atual->proximo;
+    }
+    if (atual)
+    {
+        if (anterior == NULL) cabecaLista = atual->proximo;
+        else anterior->proximo = atual->proximo;
+        free(atual); // REQUISITO: Liberar memória
+        printf("Item removido e memoria liberada (free).\n");
+    }
+    else printf("Item nao encontrado na lista.\n");
+}
+
+void buscarSequencialLista()
+{
+    char nome[30];
+    printf("\nBusca Sequencial (Lista) - Nome: ");
+    scanf("%s", nome);
+    compBusca = 0;
+    No* atual = cabecaLista;
+    while (atual != NULL)
+    {
+        compBusca++;
+        if (strcmp(atual->dados.nome, nome) == 0)
+        {
+            printf("Achado! Comparacoes: %d\n", compBusca);
+            return;
+        }
+        atual = atual->proximo;
+    }
+    printf("Nao localizado. Comparacoes: %d\n", compBusca);
+}
+
+// --- SISTEMA PRINCIPAL ---
+int main()
+{
+    int tipoEstrutura, opcao;
+
+    printf("MODO DE INVENTARIO:\n1. Vetor (Estatico)\n2. Lista Encadeada (Dinamico)\nEscolha: ");
+    scanf("%d", &tipoEstrutura);
+
+    do
+    {
+        printf(
+            "\nMENU (Sistema %d)\n1-Inserir | 2-Remover | 3-Buscar | 4-Listar | 5-Ordenar(Vetor) | 0-Sair\nEscolha: ",
+            tipoEstrutura);
+        scanf("%d", &opcao);
+
+        if (tipoEstrutura == 1)
+        {
+            // Lógica para Vetor
+            switch (opcao)
+            {
+            case 1: inserirVetor();
+                break;
+            case 2: removerVetor();
+                break;
+            case 3: buscaBinariaVetor();
+                break;
+            case 4: listarVetor();
+                break;
+            case 5: ordenarVetor();
+                break;
+            case 0: printf("Saindo...\n");
+                break;
+            default: printf("Opcao invalida!\n");
+            }
+        }
+        else
+        {
+            // Lógica para Lista
+            switch (opcao)
+            {
+            case 1: inserirLista();
+                break;
+            case 2: removerLista();
+                break;
+            case 3: buscarSequencialLista();
+                break;
+            case 4: listarLista();
+                break;
+            case 5: printf("Ordenacao indisponivel para lista nesta versao.\n");
+                break;
+            case 0: printf("Saindo...\n");
+                break;
+            default: printf("Opcao invalida!\n");
+            }
+        }
+    }
+    while (opcao != 0);
+    return 0;
+}
