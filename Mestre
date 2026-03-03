@@ -1,0 +1,171 @@
+// Criado por Geise Severo Eduardo
+// Trabalho de: Estrutura de dados em C++
+// Aluna fazendo dupla graduação em
+// CIências da Computação 3o. Sememstre - Matrícula 202501462731
+/; Engenharia de Software 3o. Semestre - Matrícula 202501534724
+// Jogo Free Fire - Nivel: Aventureiro
+// Instituição: Estácio
+
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <string>    // Necessário para usar string
+#include <iomanip>   // Corrigido: era iomanip
+
+using namespace std; 
+
+// REQUISITO: Definição da struct 
+struct Componente {
+    string nome;
+    string tipo;
+    int prioridade;
+};
+
+// --- Protótipos das funções --- 
+void bubbleSortNome(vector<Componente>& v, int& comp);
+void insertionSortTipo(vector<Componente>& v, int& comp);
+void selectionSortPrioridade(vector<Componente>& v, int& comp);
+int buscaBinariaPorNome(const vector<Componente>& v, string alvo, int& comp);
+void mostrarComponentes(const vector<Componente>& v);
+
+int main() {
+    vector<Componente> torre;
+    int total, opcao;
+    bool ordenadoPorNome = false;
+
+    cout << "--- MISSAO FINAL: ESCAPE DA ILHA ---" << endl;
+
+    // 2. Entrada de Dados 
+    cout << "Quantos componentes cadastrar (max 20)? ";
+    cin >> total;
+    cin.ignore();
+
+    for (int i = 0; i < total; i++) {
+        Componente c;
+        cout << "\nComponente " << i + 1 << ":" << endl;
+        cout << "Nome: ";
+        getline(cin, c.nome); 
+        cout << "Tipo (controle/suporte/propulsao): ";
+        getline(cin, c.tipo);
+        cout << "Prioridade (1-10): ";
+        cin >> c.prioridade;
+        cin.ignore();
+        torre.push_back(c);
+    }
+
+    do {
+        int comparacoes = 0; // Resetar a cada operação 
+        // 3. Menu Interativo [cite: 31]
+        cout << "\n--- MENU DE ESTRATEGIA ---" << endl;
+        cout << "1. Ordenar por Nome (Bubble Sort)" << endl;
+        cout << "2. Ordenar por Tipo (Insertion Sort)" << endl;
+        cout << "3. Ordenar por Prioridade (Selection Sort)" << endl;
+        cout << "4. Buscar Componente-Chave (Busca Binaria)" << endl;
+        cout << "5. Sair" << endl;
+        cout << "Escolha: ";
+        cin >> opcao;
+        cin.ignore();
+
+        clock_t inicio = clock(); 
+
+        switch (opcao) {
+            case 1:
+                bubbleSortNome(torre, comparacoes);
+                ordenadoPorNome = true;
+                break;
+            case 2:
+                insertionSortTipo(torre, comparacoes); 
+                ordenadoPorNome = false;
+                break;
+            case 3:
+                selectionSortPrioridade(torre, comparacoes);
+                ordenadoPorNome = false;
+                break;
+            case 4:
+                if (!ordenadoPorNome) { 
+                    cout << "\n[ERRO] Ordene por NOME antes de buscar!" << endl;
+                    continue;
+                } else {
+                    string alvo;
+                    cout << "Digite o nome do item-chave: ";
+                    getline(cin, alvo);
+                    int pos = buscaBinariaPorNome(torre, alvo, comparacoes); 
+                    if (pos != -1) cout << "\n[OK] Encontrado na posicao " << pos + 1 << "!" << endl;
+                    else cout << "\n[!] Item nao localizado." << endl;
+                }
+                break;
+        }
+
+        clock_t fim = clock();
+        double tempo = (double)(fim - inicio) / CLOCKS_PER_SEC;
+
+        if (opcao >= 1 && opcao <= 3) {
+            // 5. Feedback de Desempenho 
+            cout << "\n--- Desempenho ---" << endl;
+            cout << "Comparacoes: " << comparacoes << endl;
+            cout << "Tempo: " << fixed << setprecision(6) << tempo << "s" << endl;
+            mostrarComponentes(torre); [cite: 27]
+        }
+
+    } while (opcao != 5);
+
+    return 0;
+}
+
+// --- Implementação das Funções --- 
+
+void bubbleSortNome(vector<Componente>& v, int& comp) {
+    int n = v.size();
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            comp++;
+            if (v[j].nome > v[j + 1].nome) swap(v[j], v[j + 1]);
+        }
+    }
+}
+
+void insertionSortTipo(vector<Componente>& v, int& comp) {
+    int n = v.size();
+    for (int i = 1; i < n; i++) {
+        Componente pivo = v[i];
+        int j = i - 1;
+        while (j >= 0 && v[j].tipo > pivo.tipo) {
+            comp++;
+            v[j + 1] = v[j];
+            j--;
+        }
+        v[j + 1] = pivo;
+    }
+}
+
+void selectionSortPrioridade(vector<Componente>& v, int& comp) {
+    int n = v.size();
+    for (int i = 0; i < n - 1; i++) {
+        int min = i;
+        for (int j = i + 1; j < n; j++) {
+            comp++;
+            if (v[j].prioridade < v[min].prioridade) min = j;
+        }
+        swap(v[i], v[min]);
+    }
+}
+
+int buscaBinariaPorNome(const vector<Componente>& v, string alvo, int& comp) {
+    int esq = 0, dir = v.size() - 1;
+    while (esq <= dir) {
+        int meio = esq + (dir - esq) / 2;
+        comp++;
+        if (v[meio].nome == alvo) return meio;
+        if (v[meio].nome < alvo) esq = meio + 1;
+        else dir = meio - 1;
+    }
+    return -1;
+}
+
+void mostrarComponentes(const vector<Componente>& v) {
+    cout << "\n" << left << setw(20) << "NOME" << setw(15) << "TIPO" << "PRIORIDADE" << endl;
+    cout << string(45, '-') << endl;
+    for (const auto& c : v) {
+        cout << left << setw(20) << c.nome << setw(15) << c.tipo << c.prioridade << endl;
+    }
+}
